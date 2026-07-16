@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hekal\ShipBridge\Fedex;
 
 use Hekal\ShipBridge\Facades\ShipBridge;
+use Hekal\ShipBridge\Fedex\Support\PayloadFactory;
 use Hekal\ShipBridge\Support\StatusNormalizer;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\ServiceProvider;
@@ -28,8 +29,11 @@ final class FedexServiceProvider extends ServiceProvider
             /** @var array<string, string> $driverMap */
             $driverMap = $config['status_map'] ?? [];
 
+            $client = new FedexClient($app->make(HttpFactory::class), $config);
+
             return new FedexDriver(
-                http: $app->make(HttpFactory::class),
+                client: $client,
+                payloads: new PayloadFactory($config),
                 normalizer: new StatusNormalizer(array_merge($aliases, $driverMap)),
                 config: $config,
             );

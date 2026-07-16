@@ -7,6 +7,8 @@
 
 **FedEx** shipping driver for [ShipBridge](https://github.com/mohamedhekal/shipbridge) · Region: **Global** / **عالمي**
 
+Real FedEx REST API: `https://apis.fedex.com` (sandbox: `https://apis-sandbox.fedex.com`)
+
 ---
 
 ## بالعربي — في ٣ خطوات
@@ -19,12 +21,12 @@ composer require mohamedhekal/shipbridge mohamedhekal/shipbridge-fedex
 ### ٢) حط مفاتيح FedEx في `.env`
 ```env
 SHIPBRIDGE_DRIVER=fedex
-FEDEX_CLIENT_ID=your-client-id
-FEDEX_CLIENT_SECRET=your-client-secret
-FEDEX_TOKEN=optional-access-token
-FEDEX_BASE_URL=https://apis.fedex.com
+FEDEX_BASE_URL=https://apis-sandbox.fedex.com
+FEDEX_CLIENT_ID=your-api-key
+FEDEX_CLIENT_SECRET=your-secret-key
+FEDEX_ACCOUNT_NUMBER=123456789
 ```
-> FedEx يستخدم OAuth (`CLIENT_ID` / `CLIENT_SECRET`). حط `FEDEX_TOKEN` لو عندك access token جاهز.
+> التفاصيل في `config/fedex.php` و [`docs/GUIDE_AR.md`](docs/GUIDE_AR.md).
 
 ### ٣) ابعت شحنة
 ```php
@@ -34,19 +36,22 @@ use Hekal\ShipBridge\DTOs\CreateShipmentRequest;
 use Hekal\ShipBridge\DTOs\Parcel;
 
 $shipment = ShipBridge::driver('fedex')->createShipment(new CreateShipmentRequest(
-    origin: new Address('المخزن', 'شارع ١', 'القاهرة', 'EG'),
-    destination: new Address('العميل', 'شارع النيل', 'الجيزة', 'EG', phone: '01000000000'),
+    origin: new Address('المخزن', 'شارع ١', 'القاهرة', 'EG', phone: '01011111111', postalCode: '11511'),
+    destination: new Address('العميل', 'شارع النيل', 'الجيزة', 'EG', phone: '01000000000', postalCode: '12613'),
     parcels: [new Parcel(weightKg: 1.2)],
     reference: 'ORD-42',
 ));
 
 echo $shipment->trackingNumber;
+
+// PDF label (base64) is in create response raw — persist it yourself:
+$pdf = $shipment->raw['output']['transactionShipments'][0]['pieceResponses'][0]['packageDocuments'][0]['encodedLabel'] ?? null;
 ```
 
-تتبع / ليبل / مرتجع:
+تتبع / رابط تتبع:
 ```php
 ShipBridge::driver('fedex')->track($shipment->trackingNumber);
-ShipBridge::driver('fedex')->label($shipment->id);
+ShipBridge::driver('fedex')->label($shipment->trackingNumber); // FedEx public tracking URL
 ```
 
 ---
@@ -59,17 +64,20 @@ composer require mohamedhekal/shipbridge mohamedhekal/shipbridge-fedex
 
 ```env
 SHIPBRIDGE_DRIVER=fedex
-FEDEX_CLIENT_ID=your-client-id
-FEDEX_CLIENT_SECRET=your-client-secret
-FEDEX_TOKEN=optional-access-token
-FEDEX_BASE_URL=https://apis.fedex.com
+FEDEX_BASE_URL=https://apis-sandbox.fedex.com
+FEDEX_CLIENT_ID=...
+FEDEX_CLIENT_SECRET=...
+FEDEX_ACCOUNT_NUMBER=...
+FEDEX_TOKEN=          # optional pre-issued bearer token
 ```
 
 ```php
-ShipBridge::driver('fedex')->createShipment(...);
-ShipBridge::driver('fedex')->track('TRACKING');
-ShipBridge::driver('fedex')->label('SHIPMENT_ID');
+ShipBridge::driver('fedex')->createShipment(...);  // POST /ship/v1/shipments
+ShipBridge::driver('fedex')->track('7946...');    // POST /track/v1/trackingnumbers
+ShipBridge::driver('fedex')->label('7946...');   // public tracking URL (PDF from create raw)
 ```
+
+See [`docs/API.md`](docs/API.md) for OAuth, payload shape, COD, and label behavior.
 
 ## How it fits
 
@@ -80,7 +88,7 @@ Your Laravel app
  ShipBridge  (one API for all carriers)
       │
       ▼
- shipbridge-fedex  ← this package (FedEx)
+ shipbridge-fedex  ← this package (FedEx REST)
 ```
 
 ## Testing

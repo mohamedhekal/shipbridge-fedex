@@ -21,7 +21,9 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         $app['config']->set('shipbridge.default', 'fedex');
-        $app['config']->set('shipbridge.drivers.fedex.base_url', 'https://fedex.test/v1');
-        $app['config']->set('shipbridge.drivers.fedex.token', 'test-token');
+        $app['config']->set('shipbridge.drivers.fedex.base_url', 'https://apis-sandbox.fedex.com');
+        $app['config']->set('shipbridge.drivers.fedex.client_id', 'test-client-id');
+        $app['config']->set('shipbridge.drivers.fedex.client_secret', 'test-client-secret');
+        $app['config']->set('shipbridge.drivers.fedex.account_number', '123456789');
     }
 }
