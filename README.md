@@ -19,10 +19,12 @@ composer require mohamedhekal/shipbridge mohamedhekal/shipbridge-fedex
 ### ٢) حط مفاتيح FedEx في `.env`
 ```env
 SHIPBRIDGE_DRIVER=fedex
-FEDEX_API_KEY=your-key-here
+FEDEX_CLIENT_ID=your-client-id
+FEDEX_CLIENT_SECRET=your-client-secret
+FEDEX_TOKEN=optional-access-token
 FEDEX_BASE_URL=https://apis.fedex.com
 ```
-> لو الشركة بتستخدم username/password أو OAuth، شوف ملف `config/fedex.php`.
+> FedEx يستخدم OAuth (`CLIENT_ID` / `CLIENT_SECRET`). حط `FEDEX_TOKEN` لو عندك access token جاهز.
 
 ### ٣) ابعت شحنة
 ```php
@@ -57,7 +59,10 @@ composer require mohamedhekal/shipbridge mohamedhekal/shipbridge-fedex
 
 ```env
 SHIPBRIDGE_DRIVER=fedex
-FEDEX_API_KEY=your-key-here
+FEDEX_CLIENT_ID=your-client-id
+FEDEX_CLIENT_SECRET=your-client-secret
+FEDEX_TOKEN=optional-access-token
+FEDEX_BASE_URL=https://apis.fedex.com
 ```
 
 ```php
